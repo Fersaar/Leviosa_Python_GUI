@@ -80,7 +80,7 @@ def btn_send_overwrite():
     sys.stdout.flush()
 
 def btn_send_pid_values():
-    message = "02" + "%6.2f%6.2f%6.2f%6.0f" % (kp.get(), ki.get(), kd.get(), PoM.get()) +"%"
+    message = "02" + "%6.2f%6.2f%6.2f%6.0f" % (kp.get(), ki.get(), kd.get(), not PoM.get()) +"%"
     s.sendSerialData(message)
     print('befehle_gui_support.btn_send_pid_values')
     sys.stdout.flush()
