@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import math
 import sys
 from threading import Thread
 import serial
@@ -9,10 +8,12 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import struct
 import copy
+import befehle_gui
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import tkinter as Tk
 from tkinter.ttk import Frame
 import pandas as pd
+from settings import *
 
 
 class serialPlot:
@@ -119,7 +120,7 @@ class Window(Frame):
 
 
         # create a new frame to place our widgets
-        frame2 = Frame(self.master)
+        """ frame2 = Frame(self.master)
         frame2.pack(side=Tk.BOTTOM)
 
         # create out widgets in the frame2
@@ -129,30 +130,23 @@ class Window(Frame):
         self.entry.insert(0, '1.0')     # (index, string)
         self.entry.pack(padx=5)
         SendButton = Tk.Button(frame2, text='Send', command=self.sendFactorToMCU)
-        SendButton.pack(padx=5)
+        SendButton.pack(padx=5)"""
+
+
 
     def sendFactorToMCU(self):
         self.serialReference.sendSerialData(self.entry.get() + '%')     # '%' is our ending marker
 
 def main():
-    portName = 'COM6'
-    #portName = '/dev/ttyUSB0'
-    baudRate = 38400
-    maxPlotLength = 100     # number of points in x-axis of real time plot
-    dataNumBytes = 4        # number of bytes of 1 data point
-    numPlots = 8            # number of plots in 1 graph
+
     s = serialPlot(portName, baudRate, maxPlotLength, dataNumBytes, numPlots)   # initializes all required variables
     s.readSerialStart()                                               # starts background thread
 
     # plotting starts below
-    pltInterval = 1    # Period at which the plot animation updates [ms]
-    xmin = 0
-    xmax = maxPlotLength
-    ymin = -(1)
-    ymax = 1
+
     fig = plt.Figure(figsize=(17, 8))
-    ax1 = fig.add_subplot(121,xlim=(xmin, xmax), ylim=(float(ymin - (ymax - ymin) / 10), float(ymax + (ymax - ymin) / 10)))
-    ax2 = fig.add_subplot(122,xlim=(xmin, xmax), ylim=(float(ymin - (ymax - ymin) / 10), float(ymax + (ymax - ymin) / 10)))
+    ax1 = fig.add_subplot(121,xlim=(xmin, xmax), ylim=(float(y1_min - (y1_max - y1_min) / 10), float(y1_max + (y1_max - y1_min) / 10)))
+    ax2 = fig.add_subplot(122,xlim=(xmin, xmax), ylim=(float(y2_min - (y2_max - y2_min) / 10), float(y2_max + (y2_max - y2_min) / 10)))
     #fig, (ax1,ax2) = plt.subplots(2,1,figsize=(10, 8))
     #ax1 = plt.axes(xlim=(xmin, xmax), ylim=(float(ymin - (ymax - ymin) / 10), float(ymax + (ymax - ymin) / 10)))
 
@@ -167,8 +161,9 @@ def main():
     # put our plot onto Tkinter's GUI
     root = Tk.Tk()
     app = Window(fig, root, s)
+    befehle_gui.create_Toplevel1(root,s)
 
-    lineLabel = ['1', '2', '3','4','a', 'b', 'c','d']
+    lineLabel = ['0', '1', '2','3','0', '1', '2','3']
     style = ['r-', 'c-', 'b-','y-','r-', 'c-', 'b-','y-']  # linestyles for the different plots
     timeText = ax1.text(0.50, 0.95, '', transform=ax1.transAxes)
     lines = []
@@ -181,7 +176,7 @@ def main():
         lines.append(ax2.plot([], [], style[i+4], label=lineLabel[i+4])[0])
         lineValueText.append(ax2.text(1.05, 0.90 - i * 0.05, '', transform=ax2.transAxes))
     anim = animation.FuncAnimation(fig, s.getSerialData, fargs=(lines, lineValueText, lineLabel, timeText),
-                                    interval=pltInterval,blit=True)  # fargs has to be a tuple
+                                    interval=pltInterval,blit=False)  # fargs has to be a tuple
 
     ax1.legend(loc="upper left")
     ax2.legend(loc="upper left")
