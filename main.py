@@ -2,6 +2,7 @@
 import sys
 from threading import Thread
 import serial
+import serial.tools.list_ports
 import time
 import collections
 import matplotlib.pyplot as plt
@@ -14,10 +15,11 @@ import tkinter as Tk
 from tkinter.ttk import Frame
 import pandas as pd
 from settings import *
+from datetime import datetime
 
 
 class serialPlot:
-    def __init__(self, serialPort='/dev/ttyUSB0', serialBaud=38400, plotLength=100, dataNumBytes=2, numPlots=1):
+    def __init__(self, serialPort='', serialBaud=38400, plotLength=100, dataNumBytes=2, numPlots=1):
         self.port = serialPort
         self.baud = serialBaud
         self.plotMaxLength = plotLength
@@ -38,7 +40,12 @@ class serialPlot:
         self.plotTimer = 0
         self.previousTimer = 0
         self.csvData = []
-
+        print('available Com ports:')
+        ports = serial.tools.list_ports.comports()
+        for port in ports:
+            print("\t" + str(port))
+            if ("Maple" in port.description) and (serialPort==''):
+                serialPort = port.device
         print('Trying to connect to: ' + str(serialPort) + ' at ' + str(serialBaud) + ' BAUD.')
         try:
             self.serialConnection = serial.Serial(serialPort, serialBaud, timeout=4)
@@ -69,9 +76,10 @@ class serialPlot:
             lines[i].set_data(range(self.plotMaxLength), self.data[i])
             lineValueText[i].set_text('[' + lineLabel[i] + '] = ' + str(value))
             #right plot
-            lines[i].set_data(range(self.plotMaxLength), self.data[i])
-            lineValueText[i].set_text('[' + lineLabel[i] + '] = ' + str(value))
-        self.csvData.append([time.perf_counter(),self.data[0][-1], self.data[1][-1], self.data[2][-1], self.data[3][-1], self.data[4][-1], self.data[5][-1], self.data[6][-1], self.data[7][-1]])
+            #lines[i].set_data(range(self.plotMaxLength), self.data[i])
+            #lineValueText[i].set_text('[' + lineLabel[i] + '] = ' + str(value))
+        if logging:
+            self.csvData.append([datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3],self.data[0][-1], self.data[1][-1], self.data[2][-1], self.data[3][-1], self.data[4][-1], self.data[5][-1], self.data[6][-1], self.data[7][-1]])
         return lines
 
 
@@ -81,7 +89,8 @@ class serialPlot:
         while (self.isRun):
             self.serialConnection.readinto(self.rawData)
             self.isReceiving = True
-            #self.csvData.append(time.perf_counter())
+            #if logging:
+                #self.csvData.append(time.perf_counter())
             #print(self.rawData)
 
     def sendSerialData(self, data):
@@ -92,8 +101,9 @@ class serialPlot:
         self.thread.join()
         self.serialConnection.close()
         print('Disconnected...')
-        df = pd.DataFrame(self.csvData)
-        df.to_csv('data.csv',sep=";",decimal=",")
+        if logging:
+            df = pd.DataFrame(self.csvData)
+            df.to_csv('messwerte_'+datetime.now().strftime('%Y_%m_%d-%H_%M_%S.%f')+'.csv',sep=";",decimal=",")
 
 
 class Window(Frame):
@@ -139,7 +149,7 @@ class Window(Frame):
 
 def main():
 
-    s = serialPlot(portName, baudRate, maxPlotLength, dataNumBytes, numPlots)   # initializes all required variables
+    s = serialPlot('', baudRate, maxPlotLength, dataNumBytes, numPlots)   # initializes all required variables
     s.readSerialStart()                                               # starts background thread
 
     # plotting starts below
@@ -163,8 +173,8 @@ def main():
     app = Window(fig, root, s)
     befehle_gui.create_Toplevel1(root,s)
 
-    lineLabel = ['0', '1', '2','3','0', '1', '2','3']
-    style = ['r-', 'c-', 'b-','y-','r-', 'c-', 'b-','y-']  # linestyles for the different plots
+    lineLabel = ['0', '1', '2','3','0', '1', '2','3','GND']
+    style = ['r-', 'c-', 'b-','y-','r-', 'c-', 'b-','y-','k']  # linestyles for the different plots
     timeText = ax1.text(0.50, 0.95, '', transform=ax1.transAxes)
     lines = []
     lineValueText = []
@@ -172,7 +182,7 @@ def main():
         lines.append(ax1.plot([], [], style[i], label=lineLabel[i])[0])
         lineValueText.append(ax1.text(-0.3, 0.90-i*0.05, '', transform=ax1.transAxes))
 
-    for i in range(4):
+    for i in range(5):
         lines.append(ax2.plot([], [], style[i+4], label=lineLabel[i+4])[0])
         lineValueText.append(ax2.text(1.05, 0.90 - i * 0.05, '', transform=ax2.transAxes))
     anim = animation.FuncAnimation(fig, s.getSerialData, fargs=(lines, lineValueText, lineLabel, timeText),

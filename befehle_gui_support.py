@@ -40,6 +40,8 @@ def set_Tk_var():
     overwrite2 = tk.IntVar()
     global overwrite3
     overwrite3 = tk.IntVar()
+    global overwrite_gnd
+    overwrite_gnd = tk.IntVar()
     global sollwert
     sollwert = tk.IntVar()
 
@@ -74,7 +76,7 @@ def btn_send_offsweep():
     sys.stdout.flush()
 
 def btn_send_overwrite():
-    message = "03" + "%6.0f%6.0f%6.0f%6.0f" % (overwrite0.get(),overwrite1.get(),overwrite2.get(),overwrite3.get()) + "%"
+    message = "03" + "%6.0f%6.0f%6.0f%6.0f%6.0f" % (overwrite0.get(),overwrite1.get(),overwrite2.get(),overwrite3.get(),overwrite_gnd.get()) + "%"
     s.sendSerialData(message)
     print('befehle_gui_support.btn_send_overwrite')
     sys.stdout.flush()
