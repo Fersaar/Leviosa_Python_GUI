@@ -19,7 +19,7 @@ from datetime import datetime
 
 
 class serialPlot:
-    def __init__(self, serialPort='', serialBaud=38400, plotLength=100, dataNumBytes=2, numPlots=1):
+    def __init__(self, serialPort='', serialBaud=115200, plotLength=100, dataNumBytes=2, numPlots=1):
         self.port = serialPort
         self.baud = serialBaud
         self.plotMaxLength = plotLength
@@ -62,9 +62,19 @@ class serialPlot:
                 time.sleep(0.1)
 
     def getSerialData(self, frame, lines, lineValueText, lineLabel, timeText):
+        """
+        do something
+        :param frame:
+        :param lines:
+        :param lineValueText:
+        :param lineLabel:
+        :param timeText:
+        :return:
+        """
         currentTimer = time.perf_counter()
         self.plotTimer = int((currentTimer - self.previousTimer) * 1000)     # the first reading will be erroneous
         self.previousTimer = currentTimer
+        timeText.set_text('Plot Interval = ' + str(self.plotTimer) + 'ms')
         timeText.set_text('Plot Interval = ' + str(self.plotTimer) + 'ms')
         privateData = copy.deepcopy(self.rawData[:])    # so that the 3 values in our plots will be synchronized to the same sample time
         for i in range(self.numPlots):
@@ -144,8 +154,8 @@ class Window(Frame):
 
 
 
-    def sendFactorToMCU(self):
-        self.serialReference.sendSerialData(self.entry.get() + '%')     # '%' is our ending marker
+   # def sendFactorToMCU(self):
+   #     self.serialReference.sendSerialData(self.entry.get() + '%')     # '%' is our ending marker
 
 def main():
 

@@ -2,7 +2,7 @@
 #Serialconfig
 portName = 'COM4'
 # portName = '/dev/ttyUSB0'
-baudRate = 38400
+baudRate = 115200
 maxPlotLength = 100  # number of points in x-axis of real time plot
 dataNumBytes = 4  # number of bytes of 1 data point
 numPlots = 9  # number of datapoints

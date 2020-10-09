@@ -45,6 +45,15 @@ def set_Tk_var():
     global sollwert
     sollwert = tk.IntVar()
 
+    global bias
+    bias = tk.DoubleVar()
+    global sweep_delay
+    sweep_delay = tk.DoubleVar()
+    global sweep_dec
+    sweep_dec = tk.DoubleVar()
+    global sweep_start
+    sweep_start = tk.DoubleVar()
+
 
 def btn_send_sollwert():
     message = "00"+ "%6.0f" % (sollwert.get()) + "%";
@@ -78,12 +87,14 @@ def btn_send_offsweep():
 def btn_send_overwrite():
     message = "03" + "%6.0f%6.0f%6.0f%6.0f%6.0f" % (overwrite0.get(),overwrite1.get(),overwrite2.get(),overwrite3.get(),overwrite_gnd.get()) + "%"
     s.sendSerialData(message)
+    print(message)
     print('befehle_gui_support.btn_send_overwrite')
     sys.stdout.flush()
 
 def btn_send_pid_values():
-    message = "02" + "%6.2f%6.2f%6.2f%6.0f" % (kp.get(), ki.get(), kd.get(), not PoM.get()) +"%"
+    message = "02" + "%8.2f%8.2f%8.2f%8.0f" % (kp.get(), ki.get(), kd.get(), not PoM.get()) +"%"
     s.sendSerialData(message)
+    print(message)
     print('befehle_gui_support.btn_send_pid_values')
     sys.stdout.flush()
 
@@ -91,6 +102,20 @@ def btn_set_automatic():
     message = "04" + "%";
     s.sendSerialData(message)
     print('befehle_gui_support.btn_set_automatic')
+    sys.stdout.flush()
+
+def btn_send_bias():
+    message = "09" + "%8.2f" % (bias.get()) + "%"
+    s.sendSerialData(message)
+    print(message)
+    print('befehle_gui_support.btn_send_bias')
+    sys.stdout.flush()
+
+def btn_send_sweep_values():
+    message = "08" + "%8.2f%8.2f%8.2f" % (sweep_delay.get(), sweep_dec.get(), sweep_start.get()) + "%"
+    s.sendSerialData(message)
+    print(message)
+    print('befehle_gui_support.btn_send_sweep_values')
     sys.stdout.flush()
 
 def init(top, gui,SerialReference, *args, **kwargs):
